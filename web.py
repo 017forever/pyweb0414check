@@ -32,55 +32,55 @@ def index():
     link+= "<a href = /account>POST傳直(帳號密碼)</a><hr>"
     link+= "<a href = /math>數學計算</a><hr>"
     link += "<a href=/cup>擲茭</a><hr>"
-    link += "<a href=/read>讀取Firestore資料(根據lab遞減排序，取前4)</a>"
+    link += "<a href=/reader>讀取Firestore資料(根據lab遞減排序，取前4)</a>"
+    link += "<a href=/read>查詢老師研究室</a>"
     return link
-
+@app.route("/reader")
+def reader():
+    def read():
+    collection_ref = db.collection("靜宜資管")
+    # 根據 mail 排序取 3 筆
+    docs = collection_ref.order_by("mail", direction=firestore.Query.DESCENDING).limit(3).get()
+   
+    Temp = "<h3>資料庫前三筆資料：</h3>"
+    for doc in docs:
+        Temp += str(doc.to_dict()) + "<br>"
+    return Temp + "<br><a href=/>回到首頁</a>"
 @app.route("/read", methods=["GET", "POST"])
-def read():
-    db = firestore.client()
-    collection_ref = db.collection("靜宜資管2026a")
+def search():
+    keyword = request.args.get("kw")
+   
+    # 這裡放一個簡單的搜尋表單，讓頁面隨時都有輸入框可以搜尋
+    search_form = """
+        <form action="/search" method="get">
+            <input type="text" name="kw" placeholder="輸入老師姓名">
+            <button type="submit">搜尋</button>
+        </form>
+        <hr>
+    """
 
-    if request.method == "POST":
-        keyword = request.form.get("keyword", "").strip()
-        temp = ""
+    if not keyword:
+        return f"{search_form}請輸入關鍵字<br><a href=/>回到首頁</a>"
 
-        docs = collection_ref.get()
-
-        for doc in docs:
-            data = doc.to_dict()
-
-            teacher_name = str(data.get("name", "")).strip()
-            lab = data.get("lab", "")
-            mail = data.get("mail", "")
-
-            if keyword in teacher_name:
-                temp += f"""
-                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                    <p><b>老師姓名：</b>{teacher_name}</p>
-                    <p><b>研究室：</b>{lab}</p>
-                    <p><b>信箱：</b>{mail}</p>
-                </div>
-                """
-
-        if temp == "":
-            temp = "<p style='color:red;'>查無資料</p>"
-
-        return f"""
-        <h2>查詢結果</h2>
-        {temp}
-        <a href="/read">回上一頁</a>
-        """
-
-    return '''
-    <h2>查詢老師資料</h2>
-    <form method="POST">
-        <input type="text" name="keyword" placeholder="請輸入老師姓名關鍵字">
-        <button type="submit">查詢</button>
-    </form>
-    '''
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    collection_ref = db.collection("靜宜資管")
+    docs = collection_ref.get()
+   
+    # 把表單放在最上面
+    result = search_form
+    result += f"<h3>關於「{keyword}」的查詢結果：</h3>"
+   
+    found = False
+    for doc in docs:
+        user = doc.to_dict()
+        if keyword in user.get('name', ''):
+            found = True
+            result += f"{user['name']}老師的研究室是在 {user['lab']}<br>"
+   
+    if not found:
+        result += "找不到這位老師"
+       
+    result += "<br><a href=/>回到首頁</a>"
+    return result
 
 @app.route("/mis")
 def course():
