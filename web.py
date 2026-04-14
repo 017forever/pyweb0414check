@@ -42,7 +42,7 @@ def search():
     collection_ref = db.collection("靜宜資管2026a")
     docs = collection_ref.order_by("lab", direction=firestore.Query.DESCENDING).limit(4).get()
    
-    Temp = "<h3>資料庫前三筆資料：</h3>"
+    Temp = "<h3>資料庫前四筆資料：</h3>"
     for doc in docs:
         Temp += str(doc.to_dict()) + "<br>"
     return Temp + "<br><a href=/>回到首頁</a>"
