@@ -38,7 +38,8 @@ def index():
 
 @app.route("/search")
 def search():
-    collection_ref = db.collection("靜宜資管")
+    db = firestore.client()
+    collection_ref = db.collection("靜宜資管2026a")
     docs = collection_ref.order_by("lab", direction=firestore.Query.DESCENDING).limit(4).get()
    
     Temp = "<h3>資料庫前三筆資料：</h3>"
