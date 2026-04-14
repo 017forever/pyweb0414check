@@ -35,17 +35,52 @@ def index():
     link += "<a href=/read>讀取Firestore資料(根據lab遞減排序，取前4)</a>"
     return link
 
-@app.route("/read")
+@app.route("/read", methods=["GET", "POST"])
 def read():
     db = firestore.client()
-
-    Temp=""
     collection_ref = db.collection("靜宜資管2026a")
-    docs = collection_ref.order_by("lab", direction=firestore.Query.DESCENDING).limit(4).get()
-    for doc in docs:
-        Temp += str(doc.to_dict() )+"<br>"
 
-    return Temp
+    if request.method == "POST":
+        keyword = request.form.get("keyword", "").strip()
+        temp = ""
+
+        docs = collection_ref.get()
+
+        for doc in docs:
+            data = doc.to_dict()
+
+            teacher_name = str(data.get("name", "")).strip()
+            lab = data.get("lab", "")
+            mail = data.get("mail", "")
+
+            if keyword in teacher_name:
+                temp += f"""
+                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+                    <p><b>老師姓名：</b>{teacher_name}</p>
+                    <p><b>研究室：</b>{lab}</p>
+                    <p><b>信箱：</b>{mail}</p>
+                </div>
+                """
+
+        if temp == "":
+            temp = "<p style='color:red;'>查無資料</p>"
+
+        return f"""
+        <h2>查詢結果</h2>
+        {temp}
+        <a href="/read">回上一頁</a>
+        """
+
+    return '''
+    <h2>查詢老師資料</h2>
+    <form method="POST">
+        <input type="text" name="keyword" placeholder="請輸入老師姓名關鍵字">
+        <button type="submit">查詢</button>
+    </form>
+    '''
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 @app.route("/mis")
 def course():
