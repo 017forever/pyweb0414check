@@ -46,7 +46,7 @@ def reader():
     for doc in docs:
         Temp += str(doc.to_dict()) + "<br>"
     return Temp + "<br><a href=/>回到首頁</a>"
-@app.route("/read", methods=["GET", "POST"])
+@app.route("/read")
 def search():
     keyword = request.args.get("kw")
    
