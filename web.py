@@ -32,8 +32,19 @@ def index():
     link+= "<a href = /account>POST傳直(帳號密碼)</a><hr>"
     link+= "<a href = /math>數學計算</a><hr>"
     link += "<a href=/cup>擲茭</a><hr>"
-    link += "<a href=/read>讀取Firestore資料(根據lab遞減排序，取前4)</a>"
+    link += "<a href=/search>讀取Firestore資料</a><hr>"
+    link += "<a href=/read>查詢老師及其研究室</a>"
     return link
+
+@app.route("/search")
+def search():
+    collection_ref = db.collection("靜宜資管")
+    docs = collection_ref.order_by("lab", direction=firestore.Query.DESCENDING).limit(4).get()
+   
+    Temp = "<h3>資料庫前三筆資料：</h3>"
+    for doc in docs:
+        Temp += str(doc.to_dict()) + "<br>"
+    return Temp + "<br><a href=/>回到首頁</a>"
 
 @app.route("/read", methods=["GET", "POST"])
 def read():
