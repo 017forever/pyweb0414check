@@ -33,7 +33,7 @@ def index():
     link+= "<a href = /math>數學計算</a><hr>"
     link += "<a href=/cup>擲茭</a><hr>"
     link += "<a href=/reader>讀取Firestore資料(根據lab遞減排序，取前4)</a>"
-    link += "<a href=/read>查詢老師研究室</a>"
+    link += "<a href=/search>查詢老師研究室</a>"
     return link
 @app.route("/reader")
 def reader():
@@ -46,7 +46,7 @@ def reader():
     for doc in docs:
         Temp += str(doc.to_dict()) + "<br>"
     return Temp + "<br><a href=/>回到首頁</a>"
-@app.route("/read")
+@app.route("/search")
 def search():
     keyword = request.args.get("kw")
    
