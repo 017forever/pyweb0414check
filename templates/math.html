@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>網頁計算機</title>
+</head>
+<body>
+    <h2>簡單計算機</h2>
+    <form action="/math" method="post">
+        <input type="number" name="x" required>
+        <select name="opt">
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+        <input type="number" name="y" required>
+        <input type="submit" value="計算">
+    </form>
+
+    {% if result is not none %}
+        <h3>結果：{{ result }}</h3>
+    {% endif %}
+
+    {% if error %}
+        <h3 style="color:red;">{{ error }}</h3>
+    {% endif %}
+</body>
+</html>

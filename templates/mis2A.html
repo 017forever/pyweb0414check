@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>017簡介</title>
+
+	<style type="text/css">
+		* { font-family:"標楷體"; margin-left:auto; margin-right:auto;}
+		h1 {color:blue; font-size:60px;}
+		h2 {color:#33ff33; font-size:40px;}
+	</style>
+	<script>
+		function change1() {
+  			document.getElementById("pic").src = "static/mountain.jpg";
+  			document.getElementById("h2text").innerText = "靜宜資管";
+		}
+
+		function change2() {
+  			document.getElementById("pic").src = "static/cliff.jpg";
+  			document.getElementById("h2text").innerText = "Lin-yi-qi";
+		}
+	</script>
+
+</head>
+<body>
+	<table width="70%" >
+		<tr>
+			<td><img src="static/cliff.jpg" width="110%" id="pic" onmouseover="change1()" onmouseout="change2()"></img></td>
+			<td>
+				<h1>林苡琦</h1>
+				<h2 id="h2text">>Lin-Yiqi</h2>
+			</td>
+
+		</tr>
+	</table>
+	<table width="70%" border="1">
+		<tr>
+			<td>
+				<h3>靜宜資管:<a href="https://csim.pu.edu.tw/"target="_blank">https://csim.pu.edu.tw/</a></h3><br>
+				<h3>E-Mail:<a href="mailto:s1130310@o365st.pu.edu.tw">s1130310@o365st.pu.edu.tw</a></h3><br>
+				<h3>Tel:<a href="tel:04-26328001,18011">04-26328001 / 分機18011-18013.</a></h3><br>
+			</td>
+
+			<td>
+				<h3>大象席地而坐電影配樂</h3><br>
+				<audio controls>
+					<source src="static/elephant.mp3" type="audio/mP3">
+				</audio><br>
+			</td>
+
+			<td>
+				<h3>不要去臺灣</h3><br>
+				<iframe src="https://www.youtube.com/embed/pW88QFpHXa8" allowfullscreen></iframe>
+			</td>
+		</tr>
+	</table>
+
+	<a href="/">返回首頁</a>
+	<a href="/mis">課程名稱</a>
+	<a href="/today">今天日期</a>
+	
+	
+	
+
+</body>
+</html>
