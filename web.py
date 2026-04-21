@@ -55,7 +55,7 @@ def sp1():
         movie_link = "https://www.atmovies.com.tw" + item.find("a").get("href")
         
         # 创建一个可点击的链接并将其加入返回的 HTML
-        R += f'{movie_name}<br><a href="{movie_link}" target="_blank">{movie_link}</a><br><br>'
+        R += f'電影:{movie_name}<br>連結:<a href="{movie_link}" target="_blank">{movie_link}</a><br><br>'
     
     return R
 
