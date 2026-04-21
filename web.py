@@ -42,7 +42,15 @@ def index():
 
 @app.route("/sp1")
 def sp1():
-    R="20260421"
+    R=""
+    url = "https://pyweb0414check.vercel.app/about"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+    #print(Data.text)
+    sp = BeautifulSoup(Data.text, "html.parser")
+    result=sp.select("td a")
+    for item in result:
+        R+= item.text+"<br>"+item.get("href")+"<br><br>"
     return R
 
 @app.route("/search")
