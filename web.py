@@ -50,7 +50,13 @@ def sp1():
     sp = BeautifulSoup(Data.text, "html.parser")
     result=sp.select(".filmListAllX li")
     for item in result:
-        R+= item.find("img").get("alt")+"<br>"+"https://www.atmovies.com.tw"+item.find("a").get("href")+"<br><br>"
+        # 获取电影名称和链接
+        movie_name = item.find("img").get("alt")
+        movie_link = "https://www.atmovies.com.tw" + item.find("a").get("href")
+        
+        # 创建一个可点击的链接并将其加入返回的 HTML
+        R += f'{movie_name}<br><a href="{movie_link}" target="_blank">{movie_link}</a><br><br>'
+    
     return R
 
 @app.route("/search")
