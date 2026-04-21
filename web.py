@@ -43,14 +43,14 @@ def index():
 @app.route("/sp1")
 def sp1():
     R=""
-    url = "https://pyweb0414check.vercel.app/about"
+    url = "https://www.atmovies.com.tw/movie/next/"
     Data = requests.get(url)
     Data.encoding = "utf-8"
     #print(Data.text)
     sp = BeautifulSoup(Data.text, "html.parser")
-    result=sp.select("td a")
+    result=sp.select(".filmListAllX li")
     for item in result:
-        R+= item.text+"<br>"+item.get("href")+"<br><br>"
+        R+= item.find("img").get("alt")+"<br>"+"https://www.atmovies.com.tw"+item.find("a").get("href")+"<br><br>"
     return R
 
 @app.route("/search")
