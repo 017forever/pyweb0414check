@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>查詢老師資料</title>
+</head>
+<body>
+
+    <h2>查詢老師資料</h2>
+
+    <form method="POST">
+        <input type="text" name="keyword" placeholder="請輸入老師姓名">
+        <input type="submit" value="查詢">
+    </form>
+
+    <hr>
+
+    {% if result is not none %}
+        <h3>結果：</h3>
+        <div>
+            {{ result|safe }}
+        </div>
+    {% endif %}
+
+</body>
+</html>

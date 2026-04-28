@@ -38,7 +38,62 @@ def index():
     link += "<a href=/search>讀取Firestore資料</a><hr>"
     link += "<a href=/read>查詢老師及其研究室</a><hr>"
     link += "<a href=/sp1>爬蟲</a><hr>"
+    link += "<a href=/movie>電影更新日期</a><hr>"
+    link += "<a href=/searchQ>電影查詢</a><hr>"
     return link
+
+@app.route("/searchQ", methods=["POST","GET"])
+def searchQ():
+    if request.method == "POST":
+        MovieTitle = request.form["MovieTitle"]
+        info = ""
+        db = firestore.client()     
+        collection_ref = db.collection("電影2A")
+        docs = collection_ref.order_by("showDate").get()
+        for doc in docs:
+            if MovieTitle in doc.to_dict()["title"]: 
+                info += "片名：" + doc.to_dict()["title"] + "<br>" 
+                info += "影片介紹：" + doc.to_dict()["hyperlink"] + "<br>"
+                info += "片長：" + doc.to_dict()["showLength"] + " 分鐘<br>" 
+                info += "上映日期：" + doc.to_dict()["showDate"] + "<br><br>"           
+        return info
+    else:  
+        return render_template("searchQ.html")
+
+@app.route("/movie")
+def movie():
+  url = "http://www.atmovies.com.tw/movie/next/"
+  Data = requests.get(url)
+  Data.encoding = "utf-8"
+  sp = BeautifulSoup(Data.text, "html.parser")
+  result=sp.select(".filmListAllX li")
+  lastUpdate = sp.find("div", class_="smaller09").text[5:]
+
+  for item in result:
+    picture = item.find("img").get("src").replace(" ", "")
+    title = item.find("div", class_="filmtitle").text
+    movie_id = item.find("div", class_="filmtitle").find("a").get("href").replace("/", "").replace("movie", "")
+    hyperlink = "http://www.atmovies.com.tw" + item.find("div", class_="filmtitle").find("a").get("href")
+    show = item.find("div", class_="runtime").text.replace("上映日期：", "")
+    show = show.replace("片長：", "")
+    show = show.replace("分", "")
+    showDate = show[0:10]
+    showLength = show[13:]
+
+    doc = {
+        "title": title,
+        "picture": picture,
+        "hyperlink": hyperlink,
+        "showDate": showDate,
+        "showLength": showLength,
+        "lastUpdate": lastUpdate
+      }
+
+    db = firestore.client()
+    doc_ref = db.collection("電影2A").document(movie_id)
+    doc_ref.set(doc)    
+  return "近期上映電影已爬蟲及存檔完畢，網站最近更新日期為：" + lastUpdate 
+
 
 @app.route("/sp1")
 def sp1():
@@ -72,47 +127,26 @@ def search():
 
 @app.route("/read", methods=["GET", "POST"])
 def read():
-    db = firestore.client()
-    collection_ref = db.collection("靜宜資管2026a")
+    result = None
 
     if request.method == "POST":
-        keyword = request.form.get("keyword", "").strip()
+        keyword = request.form["keyword"]
         temp = ""
 
-        docs = collection_ref.get()
-
-        for doc in docs:
+        for doc in firestore.client().collection("靜宜資管2026a").get():
             data = doc.to_dict()
 
-            teacher_name = str(data.get("name", "")).strip()
-            lab = data.get("lab", "")
-            mail = data.get("mail", "")
-
-            if keyword in teacher_name:
+            if keyword in data["name"]:
                 temp += f"""
-                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                    <p><b>老師姓名：</b>{teacher_name}</p>
-                    <p><b>研究室：</b>{lab}</p>
-                    <p><b>信箱：</b>{mail}</p>
-                </div>
+                <p>老師姓名：{data["name"]}</p>
+                <p>研究室：{data["lab"]}</p>
+                <p>信箱：{data["mail"]}</p>
+                <hr>
                 """
 
-        if temp == "":
-            temp = "<p style='color:red;'>查無資料</p>"
+        result = temp if temp else "查無資料"
 
-        return f"""
-        <h2>查詢結果</h2>
-        {temp}
-        <a href="/read">回上一頁</a>
-        """
-
-    return '''
-    <h2>查詢老師資料</h2>
-    <form method="POST">
-        <input type="text" name="keyword" placeholder="請輸入老師姓名關鍵字">
-        <button type="submit">查詢</button>
-    </form>
-    '''
+    return render_template("read.html", result=result)
 
 @app.route("/mis")
 def course():
