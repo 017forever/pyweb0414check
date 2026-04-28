@@ -114,9 +114,6 @@ def read():
     </form>
     '''
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 @app.route("/mis")
 def course():
     return "<h1>資訊管理導論</h1><a href=/>回到網站首頁</a>"
