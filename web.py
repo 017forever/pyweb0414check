@@ -41,7 +41,30 @@ def index():
     link += "<a href=/movie>電影更新日期</a><hr>"
     link += "<a href=/searchQ>電影查詢</a><hr>"
     link += "<a href=/road>JSON-十大肇事入口</a><hr>"
+    link += "<a href=/WT>天氣預報</a><hr>"
     return link
+@app.route("/WT", methods=["GET", "POST"])
+def WT():
+    if request.method == "POST":
+        city = request.form["city"]
+        city = city.replace("台","臺")
+
+        url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=rdec-key-123-45678-011121314&format=JSON&locationName=" + city
+        Data = requests.get(url)
+        data = json.loads(Data.text)
+
+        if data["records"]["location"]:
+            WeatherTitle = data["records"]["datasetDescription"]
+            Weather = data["records"]["location"][0]["weatherElement"][0]["time"][0]["parameter"]["parameterName"]
+            Rain = data["records"]["location"][0]["weatherElement"][1]["time"][0]["parameter"]["parameterName"]
+
+            result = f"{city}：{Weather}，降雨機率 {Rain}%"
+        else:
+            result = "查無此縣市"
+
+        return render_template("weather.html", result=result)
+
+    return render_template("weather.html", result=None)
 
 @app.route("/road")
 def road():
