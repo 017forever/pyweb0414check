@@ -46,8 +46,29 @@ def index():
     link += "<a href=/WT>天氣預報</a><hr>"
     link += "<a href=/rate>本週新片進DB</a><hr>"
     link += "<a href=/demo>聊天機器人</a><hr>"
-    link += "<a href=/AI>AI詢問</a><hr>"
+    link += "<a href=/AI>AI試用</a><hr>"
+    link += "<a href=/AI>真正的AI詢問</a><hr>"
     return link
+
+@app.route('/ask', methods=['GET', 'POST']) 
+def ask():
+    if request.method == "POST":
+        user_prompt = request.form.get('prompt', '')
+        if not user_prompt:
+            return "請輸入內容", 400
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.5-flash',
+                contents=user_prompt,
+            )
+            return response.text
+        except Exception as e:
+            return f"發生錯誤: {str(e)}", 500
+
+    else:    
+        # 當使用者直接打開網頁 (GET) 時，顯示輸入框畫面
+        return render_template("ask.html")
+
 
 @app.route("/AI")
 def AI():
