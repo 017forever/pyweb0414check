@@ -6,6 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 from google import genai
+from google.genai import types
 
 # 判斷是在 Vercel 還是本地
 if os.path.exists('serviceAccountKey.json'):
@@ -115,8 +116,19 @@ def webhook():
 
         info += result
 
-    elif action == "input.unknown":
-        info = req["queryResult"]["queryText"]
+    elif (action == "input.unknown"):
+        #info = req["queryResult"]["queryText"]
+        # 2. 建立設定物件，設定你希望限制的最大 Token 數（例如 500）
+        ai_config = types.GenerateContentConfig(
+            max_output_tokens = 128
+        )
+
+        response = client.models.generate_content(
+        model='gemini-3.5-flash', 
+        contents=req["queryResult"]["queryText"],
+        config=ai_config,        # 👈 帶入設定
+        )
+
 
     else:
         info = "我還不太懂你的意思"
