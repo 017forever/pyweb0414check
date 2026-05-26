@@ -117,8 +117,8 @@ def webhook():
 
     info += result
     
-    elif (action == "input.unknown"):
-        info =  req["queryResult"]["queryText"]
+elif (action == "input.unknown"):
+    info =  req["queryResult"]["queryText"]
 
     return make_response(jsonify({"fulfillmentText": info}))
 
