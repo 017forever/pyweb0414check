@@ -5,7 +5,7 @@ import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
-
+from google import genai
 
 # 判斷是在 Vercel 還是本地
 if os.path.exists('serviceAccountKey.json'):
@@ -24,6 +24,8 @@ from datetime import datetime
 import random
 
 app = Flask(__name__)
+client = genai.Client()
+
 
 @app.route("/")
 def index():
@@ -86,27 +88,53 @@ def webhook():
 def rate():
     #本週新片
     url = "https://www.atmovies.com.tw/movie/new/"
-    Data = requests.get(url)
-    Data.encoding = "utf-8"
-    sp = BeautifulSoup(Data.text, "html.parser")
-    lastUpdate = sp.find(class_="smaller09").text[5:]
-    print(lastUpdate)
-    print()
 
-    result=sp.select(".filmList")
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    Data = requests.get(url, headers=headers)
+    Data.encoding = "utf-8"
+
+    sp = BeautifulSoup(Data.text, "html.parser")
+
+    update_tag = sp.find(class_="smaller09")
+    if update_tag == None:
+        return "找不到網站更新日期"
+
+    lastUpdate = update_tag.text[5:]
+
+    result = sp.select(".filmList")
+
+    if len(result) == 0:
+        return "沒有抓到電影資料，可能是 class 名稱錯了或網站格式改了"
+
+    db = firestore.client()
 
     for x in result:
-        title = x.find("a").text
-        introduce = x.find("p").text
+        runtime_tag = x.find(class_="runtime")
+        if runtime_tag == None:
+            continue
 
-        movie_id = x.find("a").get("href").replace("/", "").replace("movie", "")
-        hyperlink = "http://www.atmovies.com.tw/movie/" + movie_id
+        a_tag = x.find("a")
+        p_tag = x.find("p")
+
+        if a_tag == None or p_tag == None:
+            continue
+
+        title = a_tag.text.strip()
+        introduce = p_tag.text.strip()
+
+        movie_id = a_tag.get("href").replace("/", "").replace("movie", "")
+        hyperlink = "https://www.atmovies.com.tw/movie/" + movie_id
         picture = "https://www.atmovies.com.tw/photo101/" + movie_id + "/pm_" + movie_id + ".jpg"
 
-        r = x.find(class_="runtime").find("img")
+        img_tag = runtime_tag.find("img")
         rate = ""
-        if r != None:
-            rr = r.get("src").replace("/images/cer_", "").replace(".gif", "")
+
+        if img_tag != None:
+            rr = img_tag.get("src").replace("/images/cer_", "").replace(".gif", "")
+
             if rr == "G":
                 rate = "普遍級"
             elif rr == "P":
@@ -118,30 +146,35 @@ def rate():
             else:
                 rate = "限制級"
 
-        t = x.find(class_="runtime").text
+        t = runtime_tag.text
 
-        t1 = t.find("片長")
-        t2 = t.find("分")
-        showLength = t[t1+3:t2]
+        try:
+            t1 = t.find("片長")
+            t2 = t.find("分")
+            showLength = t[t1+3:t2]
 
-        t1 = t.find("上映日期")
-        t2 = t.find("上映廳數")
-        showDate = t[t1+5:t2-8]
+            t1 = t.find("上映日期")
+            t2 = t.find("上映廳數")
+            showDate = t[t1+5:t2-8]
 
-        doc = {
-            "title": title,
-            "introduce": introduce,
-            "picture": picture,
-            "hyperlink": hyperlink,
-            "showDate": showDate,
-            "showLength": int(showLength),
-            "rate": rate,
-            "lastUpdate": lastUpdate
-        }
+            doc = {
+                "title": title,
+                "introduce": introduce,
+                "picture": picture,
+                "hyperlink": hyperlink,
+                "showDate": showDate,
+                "showLength": int(showLength),
+                "rate": rate,
+                "lastUpdate": lastUpdate
+            }
 
-        db = firestore.client()
-        doc_ref = db.collection("本週新片含分級").document(movie_id)
-        doc_ref.set(doc)
+            doc_ref = db.collection("本週新片含分級").document(movie_id)
+            doc_ref.set(doc)
+
+        except:
+            print("這部電影資料格式有問題：", title)
+            continue
+
     return "本週新片已爬蟲及存檔完畢，網站最近更新日期為：" + lastUpdate
 
 
