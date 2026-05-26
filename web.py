@@ -47,7 +47,7 @@ def index():
     link += "<a href=/rate>本週新片進DB</a><hr>"
     link += "<a href=/demo>聊天機器人</a><hr>"
     link += "<a href=/AI>AI試用</a><hr>"
-    link += "<a href=/ask>Gemini AI詢問</a><hr>"
+    link += "<a href=/ask>真正的AI詢問</a><hr>"
     return link
 
 @app.route('/ask', methods=['GET', 'POST']) 
@@ -116,6 +116,10 @@ def webhook():
         result = "查無符合「" + rate + "」的電影"
 
     info += result
+    
+    elif (action == "input.unknown"):
+        info =  req["queryResult"]["queryText"]
+
     return make_response(jsonify({"fulfillmentText": info}))
 
 
