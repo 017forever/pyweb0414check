@@ -46,7 +46,21 @@ def index():
     link += "<a href=/WT>天氣預報</a><hr>"
     link += "<a href=/rate>本週新片進DB</a><hr>"
     link += "<a href=/demo>聊天機器人</a><hr>"
+    link += "<a href=/AI>AI詢問</a><hr>"
     return link
+
+@app.route("/AI")
+def AI():
+    # 每次使用者拜訪該路徑時，直接使用全域的 client 呼叫模型
+    response = client.models.generate_content(
+        model='gemini-3.5-flash',
+        contents='我想查詢靜宜大學資管系的評價？',
+    )
+    
+    # 回傳生成的文字
+    return response.text
+
+
 
 @app.route("/demo")
 def demo():
