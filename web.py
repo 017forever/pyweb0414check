@@ -51,6 +51,7 @@ def index():
     link += "<a href=/ask>真正的AI詢問</a><hr>"
     return link
 
+
 @app.route('/ask', methods=['GET', 'POST']) 
 def ask():
     if request.method == "POST":
