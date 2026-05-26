@@ -120,7 +120,7 @@ def webhook():
         #info = req["queryResult"]["queryText"]
         # 2. 建立設定物件，設定你希望限制的最大 Token 數（例如 500）
         ai_config = types.GenerateContentConfig(
-            max_output_tokens = 128
+            max_output_tokens = 500
         )
 
         response = client.models.generate_content(
@@ -128,7 +128,7 @@ def webhook():
         contents=req["queryResult"]["queryText"],
         config=ai_config,        # 👈 帶入設定
         )
-
+        info = response.text
 
     else:
         info = "我還不太懂你的意思"
