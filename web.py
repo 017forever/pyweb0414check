@@ -90,35 +90,36 @@ def demo():
 @app.route("/webhook", methods=["POST"])
 def webhook():
 
-    # build a request object
     req = request.get_json(force=True)
-    # fetch queryResult from json
-    action =  req["queryResult"]["action"]
-    #msg =  req["queryResult"]["queryText"]
-    #info = "我是林苡琦設計的電影聊天機器人,動作：" + action + "； 查詢內容：" + msg
-    if (action == "rateChoice"):
-        rate =  req["queryResult"]["parameters"]["rate"]
-        info = "我是林苡琦設計的電影聊天機器人,您選擇的電影分級是：" + rate
+    action = req["queryResult"]["action"]
+
+    if action == "rateChoice":
+        rate = req["queryResult"]["parameters"]["rate"]
+        info = "我是林苡琦設計的電影聊天機器人，您選擇的電影分級是：" + rate + "\n\n"
+
         db = firestore.client()
         collection_ref = db.collection("本週新片含分級")
         docs = collection_ref.get()
 
         result = ""
 
-    for doc in docs:
-        data = doc.to_dict()
+        for doc in docs:
+            data = doc.to_dict()
 
-        if rate == data["rate"]:
-            result += "片名：" + data["title"] + "\n"
-            result += "介紹：" + data["hyperlink"] + "\n\n"
+            if rate == data["rate"]:
+                result += "片名：" + data["title"] + "\n"
+                result += "介紹：" + data["hyperlink"] + "\n\n"
 
-    if result == "":
-        result = "查無符合「" + rate + "」的電影"
+        if result == "":
+            result = "查無符合「" + rate + "」的電影"
 
-    info += result
-    
-elif (action == "input.unknown"):
-    info =  req["queryResult"]["queryText"]
+        info += result
+
+    elif action == "input.unknown":
+        info = req["queryResult"]["queryText"]
+
+    else:
+        info = "我還不太懂你的意思"
 
     return make_response(jsonify({"fulfillmentText": info}))
 
