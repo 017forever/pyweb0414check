@@ -91,6 +91,7 @@ def demo():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
+
     req = request.get_json(force=True)
     action = req["queryResult"]["action"]
 
@@ -103,37 +104,44 @@ def webhook():
         docs = collection_ref.get()
 
         result = ""
+
         for doc in docs:
             data = doc.to_dict()
-            if rate == data.get("rate"):  # ✅ 用 .get() 避免 KeyError
-                result += "片名：" + data.get("title", "未知") + "\n"
-                result += "介紹：" + data.get("hyperlink", "無連結") + "\n\n"
+
+            if rate == data["rate"]:
+                result += "片名：" + data["title"] + "\n"
+                result += "介紹：" + data["hyperlink"] + "\n\n"
 
         if result == "":
             result = "查無符合「" + rate + "」的電影"
+
         info += result
 
-    elif action == "input.unknown":
+    elif (action == "input.unknown"):
+        #info = req["queryResult"]["queryText"]
+        # 2. 建立設定物件，設定你希望限制的最大 Token 數（例如 500）
         instruction_text = (
             "你是一個熱心且知識豐富的專業智慧助理。"
-            "對於使用者的提問，請回覆重點的關鍵字，不要重述問題。"
+            "對於使用者的提問，請回覆重點的關鍵字，不要重述問題。"         
         )
 
-        try:
-            ai_config = types.GenerateContentConfig(
-                max_output_tokens=500,
-                system_instruction=instruction_text
-            )
-            response = client.models.generate_content(
-                model='gemini-3.5-flash',  # ✅ 修正模型名稱
-                contents=req["queryResult"]["queryText"],
-                config=ai_config,
-            )
-            info = response.text if response.text else "抱歉，我現在無法生成回應，請稍後再試。"
 
-        except Exception as e:  # ✅ 加入例外處理
-            info = f"AI 回應發生錯誤：{str(e)}"
+        ai_config = types.GenerateContentConfig(
+            max_output_tokens=500, 
+            system_instruction=instruction_text
+        )
 
+
+        response = client.models.generate_content(
+            model='gemini-3.5-flash', 
+            contents=req["queryResult"]["queryText"],
+            config=ai_config,
+        )
+
+        if response.text:
+            info = response.text
+        else:
+            info = "抱歉，我現在無法生成回應，請稍後再試。"
     else:
         info = "我還不太懂你的意思"
 
