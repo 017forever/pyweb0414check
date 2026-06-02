@@ -91,59 +91,47 @@ def demo():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-
     req = request.get_json(force=True)
     action = req["queryResult"]["action"]
-
+    
     if action == "rateChoice":
         rate = req["queryResult"]["parameters"]["rate"]
         info = "我是林苡琦設計的電影聊天機器人，您選擇的電影分級是：" + rate + "\n\n"
-
         db = firestore.client()
         collection_ref = db.collection("本週新片含分級")
         docs = collection_ref.get()
-
         result = ""
-
         for doc in docs:
             data = doc.to_dict()
-
-            if rate == data["rate"]:
-                result += "片名：" + data["title"] + "\n"
-                result += "介紹：" + data["hyperlink"] + "\n\n"
-
+            if rate == data.get("rate"):
+                result += "片名：" + data.get("title", "未知") + "\n"
+                result += "介紹：" + data.get("hyperlink", "無連結") + "\n\n"
         if result == "":
             result = "查無符合「" + rate + "」的電影"
-
         info += result
 
-    elif (action == "input.unknown"):
-        #info = req["queryResult"]["queryText"]
-        # 2. 建立設定物件，設定你希望限制的最大 Token 數（例如 500）
+    elif action == "input.unknown":
         instruction_text = (
             "你是一個熱心且知識豐富的專業智慧助理。"
-            "對於使用者的提問，請回覆重點的關鍵字，不要重述問題。"         
+            "對於使用者的提問，請回覆重點的關鍵字，不要重述問題。"
         )
+        try:
+            ai_config = types.GenerateContentConfig(
+                max_output_tokens=500,
+                system_instruction=instruction_text
+            )
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=req["queryResult"]["queryText"],
+                config=ai_config,
+            )
+            info = response.text if response.text else "抱歉，我現在無法生成回應，請稍後再試。"
+        except Exception as e:
+            info = "AI 發生錯誤：" + str(e)
 
-
-        ai_config = types.GenerateContentConfig(
-            max_output_tokens=500, 
-            system_instruction=instruction_text
-        )
-
-
-        response = client.models.generate_content(
-            model='gemini-1.5-flash', 
-            contents=req["queryResult"]["queryText"],
-            config=ai_config,
-        )
-
-        if response.text:
-            info = response.text
-        else:
-            info = "抱歉，我現在無法生成回應，請稍後再試。"
     else:
-        info = "我還不太懂你的意思"
+        # 除錯用：顯示實際 action 名稱
+        info = "action=" + str(action)
 
     return make_response(jsonify({"fulfillmentText": info}))
 
